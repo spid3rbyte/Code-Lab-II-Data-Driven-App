@@ -3,33 +3,31 @@ from PIL import Image, ImageTk
 import requests
 from io import BytesIO
 
-# Root window setup
+# Root window
 root = Tk()
 root.title("Data Driven App")
 root.geometry("1118x688")
 
 # Function to fetch Pokémon data
 def pokemon_data(pokemon_name):
-    """Fetch data from the PokéAPI based on Pokémon name or ID."""
     url = f"https://pokeapi.co/api/v2/pokemon/{pokemon_name.lower()}"
     try:
         response = requests.get(url)
-        response.raise_for_status()  
-        return response.json()  
+        response.raise_for_status()
+        return response.json()
     except requests.exceptions.RequestException as e:
         return {"error": str(e)}
 
 # Function to switch frames
 def switch_frame(frame):
-    """Switch to a different frame."""
     frame.tkraise()
 
 # Function to search for a Pokémon and display details
 def search_pokemon():
-    """Fetch and display Pokémon details based on user input."""
+    """Fetches Pokémon data and displays it in the result frame."""
     pokemon_name = entry.get().strip()
     if not pokemon_name:
-        result_label.config(text="Please enter a Pokémon name or ID.")
+        result_label.config(text="Please enter a valid Pokémon name.")
         return
 
     data = pokemon_data(pokemon_name)
@@ -49,7 +47,7 @@ def search_pokemon():
                f"Stats:\n{stats}")
     result_label.config(text=details)
 
-    # Load and display sprite image
+    # Display sprite image
     sprite_url = data["sprites"]["front_default"]
     if sprite_url:
         sprite_response = requests.get(sprite_url)
@@ -60,39 +58,68 @@ def search_pokemon():
     else:
         sprite_label.config(image="")
 
-# Create the main frames
+    # switch to search frame
+    switch_frame(search_frame)
+
+# Create main home frame
 home_frame = Frame(root)
 home_frame.place(relwidth=1, relheight=1)
 
-# image for the home frame
+# Image for the home frame
 bg_image_home = Image.open("pokemon2.png")  
 bg_photo_home = ImageTk.PhotoImage(bg_image_home)
 
 bg_label_home = Label(home_frame, image=bg_photo_home)
 bg_label_home.place(relwidth=1, relheight=1)
 
-# search input
-entry = Entry(home_frame, 
+# User search input
+entry = Entry(home_frame,
               font=("Arial", 16), 
               width=35, 
               bg="#FFEDED")
 entry.place(x=550, y=234, anchor=CENTER)
 
-# search button
+# Search button
 search_button = Button(home_frame, 
                        text="search", 
                        font=("Arial", 14), 
-                       command=search_pokemon, 
+                       command=search_pokemon,
                        bg="#FFEDED")
 search_button.place(x=835, y=234, anchor=CENTER)
 
-# Label to display Pokémon sprite
-sprite_label = Label(home_frame)
-sprite_label.place(relx=0.5, rely=0.4, anchor=CENTER)
+# search frame, user clicks search button and gets redirected to this frame
+search_frame = Frame(root)
+search_frame.place(relwidth=1, relheight=1)
 
-# Label to display Pokémon details
-result_label = Label(home_frame, text="", font=("Arial", 14), justify=LEFT, wraplength=500)
-result_label.place(relx=0.5, rely=0.6, anchor=CENTER)
+# background image
+bg_image_search = Image.open("search.png")  
+bg_photo_search = ImageTk.PhotoImage(bg_image_search)
+
+bg_label_search = Label(search_frame, image=bg_photo_search)
+bg_label_search.place(relwidth=1, relheight=1)
+
+# to display pokemon sprite 
+sprite_label = Label(search_frame, 
+                    bg="#FFEDED", 
+                    width=40)
+sprite_label.place(x=555, y=385, anchor=CENTER)
+
+# displays pokemon details
+result_label = Label(search_frame,
+                     text="", 
+                     font=("Arial", 14), 
+                     justify=LEFT,
+                     bg="#FFEDED",
+                     wraplength=500)
+result_label.place(x=555, y=570, anchor=CENTER)
+
+# Back button to return to home frame
+back_button = Button(search_frame,
+                     text="Back",
+                     font=("Arial", 14),
+                     command=lambda: switch_frame(home_frame),
+                     bg="#FFEDED")
+back_button.place(x=50, y=50)
 
 # Raise the home frame to display it
 switch_frame(home_frame)
